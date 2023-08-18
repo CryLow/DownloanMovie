@@ -1,5 +1,6 @@
 package org.example.service;
 
+import org.example.repository.ParsingRepository;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -11,6 +12,8 @@ import java.util.LinkedHashMap;
 import java.util.Scanner;
 
 public class ParsingService {
+
+    ParsingRepository parsingRepository = new ParsingRepository();
 
     public String getKPID(Document document){   //Получаем kpid
         Elements elements = document.select("iframe");
@@ -29,18 +32,6 @@ public class ParsingService {
             if(element.attr("itemprop").equals("alternativeHeadline")) return element.text().replaceAll("\\s","");
         }
         return null;
-    }
-    public HttpURLConnection connection(String urlPath){
-        try {
-            URL url = new URL(urlPath);
-            HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-            httpURLConnection.setRequestMethod("GET");
-            httpURLConnection.setConnectTimeout(10000);
-            httpURLConnection.setReadTimeout(10000);
-            return httpURLConnection;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
     public String writingToString(InputStream inputStream){
         try {
@@ -95,7 +86,7 @@ public class ParsingService {
             temp = tmp.substring(tmp.lastIndexOf("RESOLUTION=")+11,tmp.indexOf(",BANDWIDTH"));
         }
     }*/
-    public LinkedHashMap<String, String > getResolutionFromFile(String path)
+    public LinkedHashMap<String, String> getResolutionFromFile(String path)
     {
         try {
             LinkedHashMap<String, String> streamingQuality = new LinkedHashMap<>();
@@ -114,6 +105,40 @@ public class ParsingService {
             }
             return streamingQuality;
         } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public LinkedHashMap<Integer,Integer> counterSeasons(String kpid){
+        LinkedHashMap<Integer,Integer> seasonAndEpisode = new LinkedHashMap<>();
+        String url1 = "https://arcchid.link/player/responce.php?kpid="+ kpid +"&season=";
+        String url2 = "&episode=1&voice="+ "6" +"&type=undefined&uniq";
+        int season = 1;
+        try {
+            for(;;season++){
+                HttpURLConnection connection =
+                        parsingRepository.connection("https://arcchid.link/player/responce.php?kpid="+ kpid +"&season=" + season + "&episode=1&voice=6&type=undefined&uniq");
+                if(writingToString(connection.getInputStream()).equals("<center>File not found</center>")){
+                    return seasonAndEpisode;
+                }
+                int countEpisodes = counterEpisodes(kpid,season);
+                seasonAndEpisode.put(season,countEpisodes);
+            }
+        }
+        catch (IOException e){
+            throw new RuntimeException(e);
+        }
+    }
+    public int counterEpisodes(String kpid ,int season){
+        int episode = 1;
+        try {
+            for(;;episode++){
+                HttpURLConnection connection = parsingRepository.connection
+                        ("https://arcchid.link/player/responce.php?kpid=" + kpid + "&season=" + season + "&episode=" + episode + "&voice=6&type=undefined&uniq");
+                if(writingToString(connection.getInputStream()).equals("<center>File not found</center>")) return (episode-1);
+            }
+        }
+        catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
