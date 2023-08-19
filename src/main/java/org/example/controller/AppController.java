@@ -46,7 +46,7 @@ public class AppController {
     }
     public Vector<Integer> countSeason(){
         Vector<Integer> temp = new Vector<>();
-        for(int i = 1; i < movie.getDataForSeasonsAndEpisodes().size();i++){
+        for(int i = 1; i <= movie.getDataForSeasonsAndEpisodes().size();i++){
             temp.add(i);
         }
         return temp;

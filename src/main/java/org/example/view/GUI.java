@@ -17,21 +17,12 @@ public class GUI {
     public GUI(AppController appController){
         this.appController = appController;
     }
-    public void chooseGUI(){
-        JPanel jPanel = new JPanel();
-        JComboBox<Integer> chooseSeason = new JComboBox<>();
-        JComboBox<Integer> chooseEpisode = new JComboBox<>();
-        jPanel.add(chooseSeason);
-        jPanel.add(chooseEpisode);
-        jFrame.getContentPane().add(BorderLayout.SOUTH,jPanel);
-    }
     public void createGUI(){
         jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         jFrame.setSize(950,650);
         jFrame.setLocationRelativeTo(null);
         jFrame.setResizable(false);
 
-        jFrame.setVisible(true);
         JLabel jLabel = new JLabel();
 
         JPanel jPanel1 = new JPanel();
@@ -45,24 +36,29 @@ public class GUI {
         JButton buttonSend = new JButton("Скачать");
 
         JPanel jPanel3 = new JPanel();
-        JComboBox<Integer> chooseSeason = new JComboBox<>();
-        JComboBox<Integer> chooseEpisode = new JComboBox<>();
-        jPanel3.add(chooseSeason);
-        jPanel3.add(chooseEpisode);
         jFrame.getContentPane().add(BorderLayout.SOUTH,jPanel3);
 
         jPanel.add(urlMovie);
         jPanel.add(buttonSend);
         jFrame.getContentPane().add(BorderLayout.NORTH,jPanel);
 
+        final JPanel testPanel = new JPanel();
+        final JScrollPane testScrollPane = new JScrollPane(testPanel);
+        testPanel.setLayout(new BoxLayout(testPanel,BoxLayout.Y_AXIS));
         buttonSend.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if(!urlMovie.getText().equals("")){
                     appController.setMovie(new Movie(urlMovie.getText()));
-                    chooseGUI();
+                    JComboBox<Integer> chooseSeason = new JComboBox<>(appController.countSeason());
+                    chooseSeason.setSize(new Dimension(100,100));
+                    testPanel.add(chooseSeason);
+                    testScrollPane.revalidate();
                 }
             }
         });
+        jFrame.getContentPane().add(testScrollPane,BorderLayout.CENTER);
+        jFrame.setVisible(true);
+
     }
 }
